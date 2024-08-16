@@ -37,6 +37,6 @@ public:
     ~WeatherClient();
 
     void getWeatherData(const std::string &city);
-    void printWeatherData();
+    void printWeatherData(const bool &);
     bool getIsSucess() const;
 };
