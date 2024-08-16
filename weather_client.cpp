@@ -73,6 +73,7 @@ void WeatherClient::getAPIdata(const std::string &url)
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
+
         if (res == CURLE_OK)
             data = json::parse(readBuffer.c_str());
         else
@@ -89,8 +90,8 @@ void WeatherClient::proccessWeatherData()
 {
     this->weatherInfo["temp"] = to_string(data["main"]["feels_like"]);
     this->weatherInfo["humidity"] = to_string(data["main"]["humidity"]);
-    this->weatherInfo["weather"] = data["weather"]["description"];
-    this->weatherInfo["wind"] = data["wind"]["speed"];
+    this->weatherInfo["weather"] = data["weather"][0]["description"];
+    this->weatherInfo["wind"] = to_string(data["wind"]["speed"]);
 }
 
 void WeatherClient::printWeatherData()
@@ -98,7 +99,7 @@ void WeatherClient::printWeatherData()
     std::cout << "Weather: " + this->weatherInfo["weather"] << std::endl;
     std::cout << "Temperature: " + this->weatherInfo["temp"] << std::endl;
     std::cout << "Humidity: " + this->weatherInfo["humidity"] << std::endl;
-    std::cout << "Wind: " + this->weatherInfo["Wind"] << std::endl;
+    std::cout << "Wind: " + this->weatherInfo["wind"] << std::endl;
 }
 
 bool WeatherClient::getIsSucess() const
