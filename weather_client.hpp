@@ -1,6 +1,6 @@
 /*
     Основной объект, реализующий получения данных из api, из обработку и вывод
-    
+
     Конструктор класса присваивает api ключ к переменной apiKey
 
     Используй метод getWeatherData(city) для извлечения данных о погоде из api
@@ -18,20 +18,25 @@ class WeatherClient
 {
 private:
     std::string apiKey;
+    bool isSuccess = true;
 
     using json = nlohmann::json;
     json data;
 
     std::map<std::string, std::string> coords;
+    std::map<std::string, std::string> weatherInfo;
 
     void getCityUser(const std::string &);
     void getAPIdata(const std::string &);
     static size_t writeCallback(void *, size_t, size_t, void *);
     const void getAPIkey();
+    void proccessWeatherData();
 
 public:
     WeatherClient(/* args */);
     ~WeatherClient();
 
     void getWeatherData(const std::string &city);
+    void printWeatherData();
+    bool getIsSucess() const;
 };

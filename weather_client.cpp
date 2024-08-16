@@ -19,7 +19,10 @@ const void WeatherClient::getAPIkey()
         f.close();
     }
     else
+    {
         std::cerr << "Error cant open key";
+        this->isSuccess = false;
+    }
     return;
 }
 
@@ -27,6 +30,8 @@ void WeatherClient::getCityUser(const std::string &city)
 {
     const std::string url = "http://api.openweathermap.org/geo/1.0/direct?q=" + city + "&limit=5" + "&appid=" + apiKey;
     getAPIdata(url);
+    if (!this->isSuccess)
+        return;
 
     const double lat = data[0]["lat"];
     const double lon = data[0]["lon"];
@@ -38,11 +43,13 @@ void WeatherClient::getCityUser(const std::string &city)
 void WeatherClient::getWeatherData(const std::string &city)
 {
     getCityUser(city);
+    if (!this->isSuccess)
+        return;
 
     const std::string url = "https://api.openweathermap.org/data/2.5/weather?lat=" + coords["lat"] + "&lon=" + coords["lon"] + "&appid=" + apiKey;
     getAPIdata(url);
 
-    std::cerr << data;
+    proccessWeatherData();
 }
 
 size_t WeatherClient::writeCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -60,18 +67,41 @@ void WeatherClient::getAPIdata(const std::string &url)
     curl = curl_easy_init();
     if (curl)
     {
-        while (res != CURLE_OK)
-        {
-            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-            res = curl_easy_perform(curl);
-        }
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
-        data = json::parse(readBuffer.c_str());
+        if (res == CURLE_OK)
+            data = json::parse(readBuffer.c_str());
+        else
+            this->isSuccess = false;
     }
     else
     {
         std::cerr << "curl init error" << std::endl;
+        this->isSuccess = false;
     }
+}
+
+void WeatherClient::proccessWeatherData()
+{
+    this->weatherInfo["temp"] = to_string(data["main"]["feels_like"]);
+    this->weatherInfo["humidity"] = to_string(data["main"]["humidity"]);
+    this->weatherInfo["weather"] = data["weather"]["description"];
+    this->weatherInfo["wind"] = data["wind"]["speed"];
+}
+
+void WeatherClient::printWeatherData()
+{
+    std::cout << "Weather: " + this->weatherInfo["weather"] << std::endl;
+    std::cout << "Temperature: " + this->weatherInfo["temp"] << std::endl;
+    std::cout << "Humidity: " + this->weatherInfo["humidity"] << std::endl;
+    std::cout << "Wind: " + this->weatherInfo["Wind"] << std::endl;
+}
+
+bool WeatherClient::getIsSucess() const
+{
+    return this->isSuccess;
 }
