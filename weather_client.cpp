@@ -28,7 +28,7 @@ const void WeatherClient::getAPIkey()
 
 void WeatherClient::getCityUser(const std::string &city)
 {
-    const std::string url = "http://api.openweathermap.org/geo/1.0/direct?q=" + city + "&limit=5" + "&appid=" + apiKey;
+    const std::string url = "https://api.openweathermap.org/geo/1.0/direct?q=" + city + "&limit=1" + "&appid=" + apiKey;
     getAPIdata(url);
     if (!this->isSuccess)
         return;
